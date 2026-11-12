@@ -1,0 +1,46 @@
+services:
+  mongodb:
+    image: mongo:8
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secreto
+    volumes:
+      - datos-mongo:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--username", "admin", "--password", "secreto", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cursos:
+    build: ./cursos
+    ports:
+      - "3000:3000"
+    environment:
+      MONGO_URL: mongodb://admin:secreto@mongodb:27017/academia?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./cursos
+          target: /app
+          ignore:
+            - node_modules/
+            - package.json
+            - package-lock.json
+        - action: rebuild
+          path: ./cursos/package.json
+
+  reportes:
+    build: ./reportes
+    ports:
+      - "4000:4000"
+    environment:
+      CURSOS_URL: http://cursos:3000
+    depends_on:
+      - cursos
+
+volumes:
+  datos-mongo:
