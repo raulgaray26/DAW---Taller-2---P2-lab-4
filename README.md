@@ -1,0 +1,2 @@
+Laboratorio 4: Docker Compose
+Aplicación sencilla con tres servicios: MongoDB guarda los cursos, cursos los consulta y reportes pide los datos a cursos por HTTP para calcular un resumen. Reportes no tiene una base de datos propia. Las respuestas se ven como JSON en el navegador.
